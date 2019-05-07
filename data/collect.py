@@ -15,7 +15,7 @@ print(r.status_code)
 soup = BeautifulSoup(fighter_hmtl)
 
 
-print(soup.prettify())
-
+# print(soup.prettify())
+print(soup.find_all('a'))
 
 
