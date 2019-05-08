@@ -34,18 +34,19 @@ def is_fighter(link):
     return True
 
 
-def get_fighter_links(return_garbage=False):
+def get_fighter_links(src=FIGHTER_M_SRC, return_garbage=False):
     """
     Get a list of fighters as links to their individual wikipedia pages.
     Args:
-        return_garbage: If True, returns the links determined as garbage.
+        src (str): A string url representing a table of mma fighters on wikipedia with links.
+        return_garbage (bool): If True, returns the links determined as garbage.
 
     Returns:
         a list of links: either fighters as determined by screning or a list of garbage links
 
     """
 
-    r = requests.get(FIGHTER_M_SRC)
+    r = requests.get(src)
     fighter_hmtl = r.content
     soup = BeautifulSoup(fighter_hmtl)
     fighters = []
