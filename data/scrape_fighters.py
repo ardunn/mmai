@@ -21,7 +21,7 @@ def is_fighter(link):
                       "strikeforce", "world series", "list of", "kotc", "association", "elitexc", "m-1", "shoxc",
                       "category", "content", "discussion", "fights", "article", "wikipedia", "wikimedia", "logo",
                       "accesskey", "developers", "mixed martial arts", "Sengoku", "international fight league",
-                      "list_of", "current_events", "help:section"
+                      "list_of", "current_events", "help:section", "ksw"
                       ]
     if any([term in candidate for term in excluded_terms]):
         return False
@@ -48,7 +48,7 @@ def get_fighter_links(src=FIGHTER_M_SRC, return_garbage=False):
 
     r = requests.get(src)
     fighter_hmtl = r.content
-    soup = BeautifulSoup(fighter_hmtl)
+    soup = BeautifulSoup(fighter_hmtl, features="html.parser")
     fighters = []
     garbage = []
     for link in soup.find_all('a'):
