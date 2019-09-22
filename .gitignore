@@ -57,3 +57,6 @@ testing_dir*
 .idea/
 *./idea/*
 .idea/*
+
+.egg_info
+*/.egg_info/*

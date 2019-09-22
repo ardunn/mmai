@@ -3,7 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-from scrape_fighters import get_fighter_links
+from mmai.data.scrape_fighters import get_fighter_links
 
 
 """
