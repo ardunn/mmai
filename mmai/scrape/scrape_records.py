@@ -11,13 +11,14 @@ Functions for going from links to raw records.
 WIKI_BASE_LINK = "https://en.wikipedia.org"
 
 
-def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, silent=False):
+def get_fighter_record_and_info_from_relative_link(relative_link, condense=True, quiet=True, silent=False):
     """
     Get a fighter's record and info from a relative wikipedia link.
 
     Args:
         relative_link: A BeautifulSoup text object determined to contain a relative link, e.g., containing
             href="/wiki/Some_Fighter"
+        condense (bool): Checks to see if multiple info/records are identical and if they all are, returns one.
         quiet (bool): If False, prints when parsing either record or info fails any table!
         silent (bool): If False, warns when either multiple records or infos are found, or if no record or no info is
             found.
@@ -35,31 +36,41 @@ def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, si
     infos = []
     for t, table in enumerate(soup.find_all("table")):
         record = get_record_from_table(table, quiet)
+
         info = get_fighter_info_from_table(soup, quiet)
         if record:
             records.append(record)
         if info:
             infos.append(info)
 
-    if not silent:
-        if not records:
-            warnings.warn(f"Fighter record from {relative_link} not parsed.")
-        elif len(records) > 1:
-            warnings.warn(f"Multiple records found for {relative_link}! Keeping all.")
-        if not infos:
-            warnings.warn(f"Fighter info from {relative_link} not parsed.")
-        elif len(infos) > 1:
-            warnings.warn(f"Mulitple info blocks found for {relative_link}! Keeping all.")
-
     if len(records) == 1:
         fighter_data["record"] = records[0]
+    elif len(records) > 1:
+        if condense:
+            if all([r == records[0] for r in records]):
+                fighter_data["record"] = records[0]
+            elif not silent:
+                warnings.warn(f"Multiple records found for {relative_link} and could not condense. Keeping all.")
+        elif not silent:
+            warnings.warn(f"Multiple records found for {relative_link}! Keeping all.")
     else:
-        fighter_data["record"] = records
+        if not silent:
+            warnings.warn(f"Fighter record from {relative_link} not parsed.")
 
     if len(infos) == 1:
         fighter_data["info"] = infos[0]
+    elif len(infos) > 1:
+        if condense:
+            if all([r == infos[0] for r in infos]):
+                fighter_data["info"] = infos[0]
+            elif not silent:
+                warnings.warn(f"Multiple infos found for {relative_link} and could not condense. Keeping all.")
+        elif not silent:
+            warnings.warn(f"Multiple infos found for {relative_link}! Keeping all.")
     else:
-        fighter_data["info"] = infos
+        if not silent:
+            warnings.warn(f"Fighter info from {relative_link} not parsed.")
+
     return fighter_data
 
 
@@ -77,36 +88,46 @@ def get_record_from_table(table, quiet=True):
     """
     fighter_record_table_length = 10
     if is_fighter_record(table):
-        data = []
+        fights = []
         table_body = table.find('tbody')
         rows = table_body.find_all('tr')
         for row in rows:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
-            data.append([ele for ele in cols if ele])  # Get rid of empty values
+            fights.append([ele for ele in cols if ele])  # Get rid of empty values
 
         headers = table_body.find_all('th')
         headers = [ele.text.strip() for ele in headers]
 
-        data = [d for d in data if d]  # remove empty lists/rows
+        fights = [d for d in fights if d]  # remove empty lists/rows
         noted_data = []
-        max_len = max([len(d) for d in data])
+        max_len = max([len(f) for f in fights])
         if max_len > fighter_record_table_length:
-            raise ValueError(
-                "max_len is more than the known table length? {} > {}".format(max_len, fighter_record_table_length))
+            if not quiet:
+                warnings.warn("Record not parsed from table due to expected column mismatch, is this a some other kind "
+                              "of table?")
+            return None
 
-        for fight in data:
+        if not headers or len(headers) != max_len:
+            if not quiet:
+                warnings.warn("Record not parsed from table due to header parsing problem. Is this a kickboxing "
+                              "record?")
+            return None
+
+        for i, fight in enumerate(fights):
             fight_diff = fighter_record_table_length - len(fight)
             if fight_diff == 1:
                 fight.append('')  # add in blank note
             elif fight_diff == 0:
                 pass
             else:
-                raise ValueError(
-                    "Difference in length of fight and known length is {}? fight is: {}".format(fight_diff, fight))
+                if not quiet:
+                    warnings.warn("Fight {} not matching length of at least one other fight, returning None...")
+                return None
             noted_data.append(fight)
+
         raw_df = pd.DataFrame(columns=headers, data=noted_data)
-        df_as_list = raw_df.T.to_dict().values()
+        df_as_list = list(raw_df.T.to_dict().values())
         return df_as_list
     else:
         if not quiet:
