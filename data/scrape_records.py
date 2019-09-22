@@ -26,24 +26,13 @@ def is_fighter_bio(table):
     else:
         return True
 
-if __name__ == "__main__":
-    pd.set_option('display.max_rows', 500)
-    pd.set_option('display.max_columns', 500)
-    pd.set_option('display.width', 1000)
 
-    links = get_fighter_links()
-
-    # print(links)
-
-    link = links[241]
+def link_to_raw_fighter_record(link, quiet=True, very_quiet=False):
     request = get_page_content_by_wiki_relative_link(link)
-
     soup = BeautifulSoup(request.content, features="html.parser")
 
-    for table in soup.find_all("table"):
-        print("broo")
+    for t, table in enumerate(soup.find_all("table")):
         data = []
-
         if is_fighter_record(table):
             # print(table)
             table_body = table.find('tbody')
@@ -66,17 +55,38 @@ if __name__ == "__main__":
             for fight in data:
                 fight_diff = KNOWN_TABLE_LENGTH - len(fight)
                 if fight_diff == 1:
-                    fight.append('') # add in blank note
+                    fight.append('')  # add in blank note
                 elif fight_diff == 0:
                     pass
                 else:
-                    raise ValueError("Difference in length of fight and known length is {}? fight is: {}".format(fight_diff, fight))
+                    raise ValueError(
+                        "Difference in length of fight and known length is {}? fight is: {}".format(fight_diff, fight))
                 noted_data.append(fight)
 
-            df = pd.DataFrame(columns=headers, data=noted_data)
-            print(df)
+            raw_df = pd.DataFrame(columns=headers, data=noted_data)
 
-            # print(noted_data)
-            # print(data)
+            if not very_quiet:
+                print(f"Fighter link {link} successfully parsed from table {t}")
+            return raw_df
+        else:
+            if not quiet:
+                print(f"Fighter record not parsed from table {t}.")
+            continue
+    else:
+        if not very_quiet:
+            print(f"Fighter link could not be parsed from any table!")
+        return None
 
-    # print(soup.prettify())
+if __name__ == "__main__":
+    pd.set_option('display.max_rows', 500)
+    pd.set_option('display.max_columns', 500)
+    pd.set_option('display.width', 1000)
+
+    links = get_fighter_links()
+
+    # print(links)
+
+    link = links[241]
+
+    df = link_to_raw_fighter_record(link)
+    print(df)
