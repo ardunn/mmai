@@ -12,11 +12,31 @@ WIKI_BASE_LINK = "https://en.wikipedia.org"
 
 
 def get_page_content_by_wiki_relative_link(relative_link, base_link=WIKI_BASE_LINK):
+    """
+    Fetch the html content for a wikipedia fighter page by relative link.
+
+    Args:
+        relative_link: The relative wikipedia link, e.g. /wiki/Some_Fighter
+        base_link: The base wikipedia link.
+
+    Returns:
+
+    """
     r = requests.get(base_link + relative_link.get("href"))
     return r
 
 
 def is_fighter_record(table):
+    """
+    Determine if a table is a fighter's bio.
+
+    Args:
+        table: Beautiful soup text from html table.
+
+    Returns:
+        (bool): true, if the table is a fighter record
+
+    """
     if "Location" not in str(table):
         return False
     else:
@@ -24,6 +44,16 @@ def is_fighter_record(table):
 
 
 def is_fighter_bio(table):
+    """
+    Determine if a table is a fighter's bio.
+
+    Args:
+        table: Beautiful soup text from html table.
+
+    Returns:
+        (bool): true, if the table is a fighter bio
+
+    """
     if 'class="infobox vcard"' in str(table):
         return True
     else:
