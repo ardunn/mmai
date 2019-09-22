@@ -36,7 +36,7 @@ def get_record_and_metadata_from_link(link, quiet=True, silent=False):
     fighter_data = {"record": None, "metadata": None}
     for t, table in enumerate(soup.find_all("table")):
         record = get_record_from_table(table, quiet)
-        metadata = get_metadata_from_table(soup, quiet)
+        metadata = get_fighter_info_from_table(soup, quiet)
         if record:
             fighter_data["record"] = record
         if metadata:
@@ -82,17 +82,19 @@ def get_record_from_table(table, quiet=True):
         return None
 
 
-def get_metadata_from_table(table, quiet=True):
+def get_fighter_info_from_table(table, quiet=True):
     if is_fighter_bio(table):
-        span_keys = {
-            "fn": "full_name",
-            "bday": "birthday",
-        }
         table_body = table.find('tbody')
-        name = table_body.find_all('span', class_="fn")[0]
-        name = name.text.strip()
 
-        print(name)
+        span_keys = {
+            "fn": "Full name",
+            "bday": "Formatted birthday",
+        }
+        info = {v: None for _, v in span_keys.items()}
+
+        for k, v in span_keys.items():
+            item = table_body.find_all('span', class_="fn")[0]
+            info[v] = item.text.strip()
 
         row_keys = [
             "Born",
@@ -115,7 +117,12 @@ def get_metadata_from_table(table, quiet=True):
             if any([r in row.text for r in row_keys]):
                 header = row.find('th').text.strip()
                 value = row.find('td').text.strip()
-                print(f"{header}: {value}")
+                info[header] = value
+        return info
+    else:
+        if not quiet:
+            print("Info not parsed from table.")
+        return None
 
 
 if __name__ == "__main__":
@@ -129,7 +136,6 @@ if __name__ == "__main__":
         request = get_page_content_by_wiki_relative_link(link)
         soup = BeautifulSoup(request.content, features="html.parser")
         for t, table in enumerate(soup.find_all("table")):
-            md = get_metadata_from_table(table)
+            md = get_fighter_info_from_table(table)
             if md:
                 pprint.pprint(md)
-                # print(table.prettify())
