@@ -6,6 +6,11 @@ import pandas as pd
 from scrape_fighters import get_fighter_links
 
 
+"""
+Functions for going from links to raw records.
+"""
+
+
 WIKI_BASE_LINK = "https://en.wikipedia.org"
 KNOWN_TABLE_LENGTH = 10
 # KNOWN_TABLE_HEADERS =

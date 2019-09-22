@@ -1,6 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+"""
+Functions for getting fighters from the overall list of fighters.
+"""
+
 FIGHTER_M_SRC = "https://en.wikipedia.org/wiki/List_of_male_mixed_martial_artists"
 
 
