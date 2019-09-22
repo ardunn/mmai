@@ -1,4 +1,5 @@
 import requests
+import warnings
 
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -30,17 +31,40 @@ def is_fighter_bio(table):
         return False
 
 
-def get_record_and_metadata_from_link(link, quiet=True, silent=False):
-    request = get_page_content_by_wiki_relative_link(link)
+def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, silent=False):
+    request = get_page_content_by_wiki_relative_link(relative_link)
     soup = BeautifulSoup(request.content, features="html.parser")
-    fighter_data = {"record": None, "metadata": None}
+    fighter_data = {"record": None, "info": None}
+
+    records = []
+    infos = []
     for t, table in enumerate(soup.find_all("table")):
         record = get_record_from_table(table, quiet)
-        metadata = get_fighter_info_from_table(soup, quiet)
+        info = get_fighter_info_from_table(soup, quiet)
         if record:
-            fighter_data["record"] = record
-        if metadata:
-            fighter_data["metadata"] = metadata
+            records.append(record)
+        if info:
+            infos.append(info)
+
+    if not silent:
+        if not records:
+            warnings.warn(f"Fighter record from {relative_link} not parsed.")
+        elif len(records) > 1:
+            warnings.warn(f"Multiple records found for {relative_link}! Keeping all.")
+        if not infos:
+            warnings.warn(f"Fighter info from {relative_link} not parsed.")
+        elif len(infos) > 1:
+            warnings.warn(f"Mulitple info blocks found for {relative_link}! Keeping all.")
+
+    if len(records) == 1:
+        fighter_data["record"] = records[0]
+    else:
+        fighter_data["record"] = records
+
+    if len(infos) == 1:
+        fighter_data["info"] = infos[0]
+    else:
+        fighter_data["info"] = infos
     return fighter_data
 
 
@@ -123,19 +147,3 @@ def get_fighter_info_from_table(table, quiet=True):
         if not quiet:
             print("Info not parsed from table.")
         return None
-
-
-if __name__ == "__main__":
-    import pprint
-
-    from mmai.scrape.scrape_fighters import get_fighter_links
-
-    links = get_fighter_links()
-
-    for link in [links[21], links[1001], links[394]]:
-        request = get_page_content_by_wiki_relative_link(link)
-        soup = BeautifulSoup(request.content, features="html.parser")
-        for t, table in enumerate(soup.find_all("table")):
-            md = get_fighter_info_from_table(table)
-            if md:
-                pprint.pprint(md)
