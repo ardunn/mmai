@@ -11,66 +11,20 @@ Functions for going from links to raw records.
 WIKI_BASE_LINK = "https://en.wikipedia.org"
 
 
-def get_page_content_by_wiki_relative_link(relative_link, base_link=WIKI_BASE_LINK):
-    """
-    Fetch the html content for a wikipedia fighter page by relative link.
-
-    Args:
-        relative_link: The relative wikipedia link, e.g. /wiki/Some_Fighter
-        base_link: The base wikipedia link.
-
-    Returns:
-
-    """
-    r = requests.get(base_link + relative_link.get("href"))
-    return r
-
-
-def is_fighter_record(table):
-    """
-    Determine if a table is a fighter's bio.
-
-    Args:
-        table: Beautiful soup text from html table.
-
-    Returns:
-        (bool): true, if the table is a fighter record
-
-    """
-    if "Location" not in str(table):
-        return False
-    else:
-        return True
-
-
-def is_fighter_bio(table):
-    """
-    Determine if a table is a fighter's bio.
-
-    Args:
-        table: Beautiful soup text from html table.
-
-    Returns:
-        (bool): true, if the table is a fighter bio
-
-    """
-    if 'class="infobox vcard"' in str(table):
-        return True
-    else:
-        return False
-
-
 def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, silent=False):
     """
     Get a fighter's record and info from a relative wikipedia link.
 
     Args:
-        relative_link (str): The relative link, e.g., /wiki/Some_Fighter
+        relative_link: A BeautifulSoup text object determined to contain a relative link, e.g., containing
+            href="/wiki/Some_Fighter"
         quiet (bool): If False, prints when parsing either record or info fails any table!
         silent (bool): If False, warns when either multiple records or infos are found, or if no record or no info is
             found.
 
     Returns:
+        (dict): Contains "record" and "info" fields. If all the parsing went well, each field's value should be a dict.
+            Otherwise, will be a list (if multiple of either item) or None (if not found).
 
     """
     request = get_page_content_by_wiki_relative_link(relative_link)
@@ -212,3 +166,53 @@ def get_fighter_info_from_table(table, quiet=True):
         if not quiet:
             print("Info not parsed from table.")
         return None
+
+
+def get_page_content_by_wiki_relative_link(relative_link, base_link=WIKI_BASE_LINK):
+    """
+    Fetch the html content for a wikipedia fighter page by relative link.
+
+    Args:
+        relative_link: A BeautifulSoup text object determined to contain a relative link, e.g., containing
+            href="/wiki/Some_Fighter"
+        base_link: The base wikipedia link.
+
+    Returns:
+
+    """
+    r = requests.get(base_link + relative_link.get("href"))
+    return r
+
+
+def is_fighter_record(table):
+    """
+    Determine if a table is a fighter's bio.
+
+    Args:
+        table: Beautiful soup text from html table.
+
+    Returns:
+        (bool): true, if the table is a fighter record
+
+    """
+    if "Location" not in str(table):
+        return False
+    else:
+        return True
+
+
+def is_fighter_bio(table):
+    """
+    Determine if a table is a fighter's bio.
+
+    Args:
+        table: Beautiful soup text from html table.
+
+    Returns:
+        (bool): true, if the table is a fighter bio
+
+    """
+    if 'class="infobox vcard"' in str(table):
+        return True
+    else:
+        return False
