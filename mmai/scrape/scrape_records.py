@@ -9,7 +9,6 @@ Functions for going from links to raw records.
 """
 
 WIKI_BASE_LINK = "https://en.wikipedia.org"
-KNOWN_TABLE_LENGTH = 10
 
 
 def get_page_content_by_wiki_relative_link(relative_link, base_link=WIKI_BASE_LINK):
@@ -32,6 +31,18 @@ def is_fighter_bio(table):
 
 
 def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, silent=False):
+    """
+    Get a fighter's record and info from a relative wikipedia link.
+
+    Args:
+        relative_link (str): The relative link, e.g., /wiki/Some_Fighter
+        quiet (bool): If False, prints when parsing either record or info fails any table!
+        silent (bool): If False, warns when either multiple records or infos are found, or if no record or no info is
+            found.
+
+    Returns:
+
+    """
     request = get_page_content_by_wiki_relative_link(relative_link)
     soup = BeautifulSoup(request.content, features="html.parser")
     fighter_data = {"record": None, "info": None}
@@ -69,6 +80,18 @@ def get_fighter_record_and_info_from_relative_link(relative_link, quiet=True, si
 
 
 def get_record_from_table(table, quiet=True):
+    """
+    Parse a fighter's record from a wikipedia table.
+
+    Args:
+        table: A BeautifulSoup text table from html
+        quiet: If False, prints when a parsing fails for a table.
+
+    Returns:
+        ([dict], None): The fighter's record as a list of dicts, or None if parsing fails.
+
+    """
+    fighter_record_table_length = 10
     if is_fighter_record(table):
         data = []
         table_body = table.find('tbody')
@@ -84,12 +107,12 @@ def get_record_from_table(table, quiet=True):
         data = [d for d in data if d]  # remove empty lists/rows
         noted_data = []
         max_len = max([len(d) for d in data])
-        if max_len > KNOWN_TABLE_LENGTH:
+        if max_len > fighter_record_table_length:
             raise ValueError(
-                "max_len is more than the known table length? {} > {}".format(max_len, KNOWN_TABLE_LENGTH))
+                "max_len is more than the known table length? {} > {}".format(max_len, fighter_record_table_length))
 
         for fight in data:
-            fight_diff = KNOWN_TABLE_LENGTH - len(fight)
+            fight_diff = fighter_record_table_length - len(fight)
             if fight_diff == 1:
                 fight.append('')  # add in blank note
             elif fight_diff == 0:
@@ -99,7 +122,8 @@ def get_record_from_table(table, quiet=True):
                     "Difference in length of fight and known length is {}? fight is: {}".format(fight_diff, fight))
             noted_data.append(fight)
         raw_df = pd.DataFrame(columns=headers, data=noted_data)
-        return raw_df
+        df_as_list = raw_df.T.to_dict().values()
+        return df_as_list
     else:
         if not quiet:
             print("Record not parsed from table.")
@@ -107,6 +131,17 @@ def get_record_from_table(table, quiet=True):
 
 
 def get_fighter_info_from_table(table, quiet=True):
+    """
+    Get a fighter's basic info from a wikipedia parsed table.
+
+    Args:
+        table: A BeautifulSoup text table from html
+        quiet (bool): If False, prints when a parsing fails for a table.
+
+    Returns:
+        (dict, None): Basic info about the fighter, or None if the parsing failed.
+
+    """
     if is_fighter_bio(table):
         table_body = table.find('tbody')
 
