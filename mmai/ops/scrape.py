@@ -7,24 +7,13 @@ import pymongo
 from mmai.scrape.scrape_fighters import get_fighter_links
 from mmai.scrape.scrape_records import get_fighter_record_and_info_from_relative_link
 
-if __name__ == "__main__":
 
+def scrape_wikipedia():
     mc = pymongo.MongoClient(host="localhost", port=27017)
     db = mc.mmai
     c = db.raw
 
     links = get_fighter_links()
-
-    # michael bisping = 144
-    # fighter_index = 10
-    # print(links[fighter_index])
-    # links = [links[fighter_index]]
-    # links = [links[fighter_index], links[200], links[1900]]
-
-    # links = ["/wiki/Muhammed_Lawal"]
-
-    # links = [random.choice(links) for _ in range(100)]
-
 
     good = []
     bad = []
@@ -61,3 +50,6 @@ if __name__ == "__main__":
                 f.write(l.text)
                 f.write("\n")
 
+
+if __name__ == "__main__":
+    scrape_wikipedia()
