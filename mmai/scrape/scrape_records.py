@@ -38,8 +38,11 @@ def get_fighter_record_and_info_from_relative_link(relative_link, condense=True,
     records = []
     infos = []
     for t, table in enumerate(soup.find_all("table")):
-        record = get_record_from_table(table, quiet=quiet)
-        info = get_fighter_info_from_table(soup, quiet=quiet)
+        try:
+            record = get_record_from_table(table, quiet=quiet)
+            info = get_fighter_info_from_table(soup, quiet=quiet)
+        except AttributeError:
+            break
         if record:
             records.append(record)
         if info:
