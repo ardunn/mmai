@@ -1,6 +1,6 @@
 import pprint
 
-import numpy
+import random
 import tqdm
 import pymongo
 
@@ -21,13 +21,17 @@ if __name__ == "__main__":
     # links = [links[fighter_index]]
     # links = [links[fighter_index], links[200], links[1900]]
 
+    # links = ["/wiki/Muhammed_Lawal"]
+
+    # links = [random.choice(links) for _ in range(100)]
+
 
     good = []
     bad = []
     ugly = []
 
     for link in tqdm.tqdm(links):
-        fighter_data = get_fighter_record_and_info_from_relative_link(link, quiet=False, silent=False)
+        fighter_data = get_fighter_record_and_info_from_relative_link(link, quiet=True, silent=False)
 
         w = fighter_data["warning_level"]
         if w == 0:
@@ -42,15 +46,13 @@ if __name__ == "__main__":
         fighter_data["link"] = str(link)
         fighter_data["title"] = link.text
 
-        pprint.pprint(fighter_data)
+        # pprint.pprint(fighter_data)
+        c.insert_one(fighter_data)
 
-
-
-        # c.insert_one(fighter_data)
-
-    print(f"Links successfully parsed: {len(good)}"
-          f"\nLinks having one problem: {len(bad)}"
-          f"\nLinks having multiple problems: {len(ugly)}")
+    n_links = len(links)
+    print(f"Links successfully parsed: {len(good)}/{n_links}"
+          f"\nLinks having one problem: {len(bad)}/{n_links}"
+          f"\nLinks having multiple problems: {len(ugly)}/{n_links}")
 
     filenames = {"good.txt": good, "bad.txt": bad, "ugly.txt": ugly}
     for k, v in filenames.items():

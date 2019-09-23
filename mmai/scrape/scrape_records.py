@@ -17,7 +17,7 @@ def get_fighter_record_and_info_from_relative_link(relative_link, condense=True,
 
     Args:
         relative_link: A BeautifulSoup text object determined to contain a relative link, e.g., containing
-            href="/wiki/Some_Fighter"
+            href="/wiki/Some_Fighter" or a (str) relative link, e.g., "/wiki/Some_Fighter"
         condense (bool): Checks to see if multiple info/records are identical and if they all are, returns one.
         quiet (bool): If False, prints when parsing either record or info fails any table!
         silent (bool): If False, warns when either multiple records or infos are found, or if no record or no info is
@@ -130,8 +130,8 @@ def get_record_from_table(table, quiet=True):
         #                       "record?")
         #     return None
 
-        for f in fights:
-            print(len(f), f)
+        # for f in fights:
+        #     print(len(f), f)
 
         for i, fight in enumerate(fights):
             fight_diff = fighter_record_table_length - len(fight)
@@ -141,8 +141,9 @@ def get_record_from_table(table, quiet=True):
                 pass
             else:
                 if not quiet:
-                    warnings.warn("Fight {} not matching length of at least one other fight, returning None...")
-                return None
+                    warnings.warn(f"Fight {i} not matching length of at least one other fight, refusing to add this "
+                                  "fight")
+                continue
             noted_data.append(fight)
 
         try:
@@ -233,13 +234,16 @@ def get_page_content_by_wiki_relative_link(relative_link, base_link=WIKI_BASE_LI
 
     Args:
         relative_link: A BeautifulSoup text object determined to contain a relative link, e.g., containing
-            href="/wiki/Some_Fighter"
+            href="/wiki/Some_Fighter" or a (str) relative link, e.g., "/wiki/Some_Fighter"
         base_link: The base wikipedia link.
 
     Returns:
 
     """
-    r = requests.get(base_link + relative_link.get("href"))
+    try:
+        r = requests.get(base_link + relative_link.get("href"))
+    except AttributeError:
+        r = requests.get(base_link + relative_link)
     return r
 
 
