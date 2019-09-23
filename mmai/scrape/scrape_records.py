@@ -25,19 +25,21 @@ def get_fighter_record_and_info_from_relative_link(relative_link, condense=True,
 
     Returns:
         (dict): Contains "record" and "info" fields. If all the parsing went well, each field's value should be a dict.
-            Otherwise, will be a list (if multiple of either item) or None (if not found).
+            Otherwise, will be a list (if multiple of either item) or None (if not found). Also contains warning_level
+            field for determining how good a parsing was: 0 means no warnings, 1 means 1 warning, and 2 means
+            both record and info were likely messed up.
 
     """
     request = get_page_content_by_wiki_relative_link(relative_link)
     soup = BeautifulSoup(request.content, features="html.parser")
     fighter_data = {"record": None, "info": None}
+    warning_level = 0
 
     records = []
     infos = []
     for t, table in enumerate(soup.find_all("table")):
-        record = get_record_from_table(table, quiet)
-
-        info = get_fighter_info_from_table(soup, quiet)
+        record = get_record_from_table(table, quiet=quiet)
+        info = get_fighter_info_from_table(soup, quiet=quiet)
         if record:
             records.append(record)
         if info:
@@ -49,11 +51,16 @@ def get_fighter_record_and_info_from_relative_link(relative_link, condense=True,
         if condense:
             if all([r == records[0] for r in records]):
                 fighter_data["record"] = records[0]
-            elif not silent:
-                warnings.warn(f"Multiple records found for {relative_link} and could not condense. Keeping all.")
-        elif not silent:
-            warnings.warn(f"Multiple records found for {relative_link}! Keeping all.")
+            else:
+                warning_level += 1
+                if not silent:
+                    warnings.warn(f"Multiple records found for {relative_link} and could not condense. Keeping all.")
+        else:
+            warning_level += 1
+            if not silent:
+                warnings.warn(f"Multiple records found for {relative_link}! Keeping all.")
     else:
+        warning_level += 1
         if not silent:
             warnings.warn(f"Fighter record from {relative_link} not parsed.")
 
@@ -63,13 +70,20 @@ def get_fighter_record_and_info_from_relative_link(relative_link, condense=True,
         if condense:
             if all([r == infos[0] for r in infos]):
                 fighter_data["info"] = infos[0]
-            elif not silent:
-                warnings.warn(f"Multiple infos found for {relative_link} and could not condense. Keeping all.")
-        elif not silent:
-            warnings.warn(f"Multiple infos found for {relative_link}! Keeping all.")
+            else:
+                warning_level += 1
+                if not silent:
+                    warnings.warn(f"Multiple infos found for {relative_link} and could not condense. Keeping all.")
+        else:
+            warning_level += 1
+            if not silent:
+                warnings.warn(f"Multiple infos found for {relative_link}! Keeping all.")
     else:
+        warning_level += 1
         if not silent:
             warnings.warn(f"Fighter info from {relative_link} not parsed.")
+
+    fighter_data["warning_level"] = warning_level
 
     return fighter_data
 
@@ -96,8 +110,10 @@ def get_record_from_table(table, quiet=True):
             cols = [ele.text.strip() for ele in cols]
             fights.append([ele for ele in cols if ele])  # Get rid of empty values
 
+        # print(table_body)
+        # print("\n\n\n\n\n\n\n")
         headers = table_body.find_all('th')
-        headers = [ele.text.strip() for ele in headers]
+        headers = [ele.text.strip().replace(".", "") for ele in headers]
 
         fights = [d for d in fights if d]  # remove empty lists/rows
         noted_data = []
@@ -108,16 +124,19 @@ def get_record_from_table(table, quiet=True):
                               "of table?")
             return None
 
-        if not headers or len(headers) != max_len:
-            if not quiet:
-                warnings.warn("Record not parsed from table due to header parsing problem. Is this a kickboxing "
-                              "record?")
-            return None
+        # if not headers or len(headers) != max_len:
+        #     if not quiet:
+        #         warnings.warn("Record not parsed from table due to header parsing problem. Is this a kickboxing "
+        #                       "record?")
+        #     return None
+
+        for f in fights:
+            print(len(f), f)
 
         for i, fight in enumerate(fights):
             fight_diff = fighter_record_table_length - len(fight)
-            if fight_diff == 1:
-                fight.append('')  # add in blank note
+            if fight_diff in [1, 2]:
+                fight += [''] * fight_diff  # add in blank note(s)
             elif fight_diff == 0:
                 pass
             else:
@@ -126,7 +145,12 @@ def get_record_from_table(table, quiet=True):
                 return None
             noted_data.append(fight)
 
-        raw_df = pd.DataFrame(columns=headers, data=noted_data)
+        try:
+            raw_df = pd.DataFrame(columns=headers, data=noted_data)
+        except:
+            if not quiet:
+                warnings.warn("Record could not be converted to dataframe.")
+            return None
         df_as_list = list(raw_df.T.to_dict().values())
         return df_as_list
     else:
@@ -148,7 +172,15 @@ def get_fighter_info_from_table(table, quiet=True):
 
     """
     if is_fighter_bio(table):
-        table_body = table.find('tbody')
+        table_body = None
+        for tb in table.find_all('tbody'):
+            # Make sure it is the right tbody from all of the possible tables!
+            if 'class="fn"' in str(tb):
+                table_body = tb
+        if not table_body:
+            if not quiet:
+                print("Table body could not be parsed")
+            return None
 
         span_keys = {
             "fn": "Full name",
@@ -157,8 +189,14 @@ def get_fighter_info_from_table(table, quiet=True):
         info = {v: None for _, v in span_keys.items()}
 
         for k, v in span_keys.items():
-            item = table_body.find_all('span', class_="fn")[0]
-            info[v] = item.text.strip()
+            items = table_body.find_all('span', class_=k)
+            if not items:
+                if not quiet:
+                    warnings.warn("Could not parse basic info from fighter table! Continuing anyways")
+                    info[v] = None
+            else:
+                item = items[0]
+                info[v] = item.text.strip()
 
         row_keys = [
             "Born",
@@ -176,7 +214,7 @@ def get_fighter_info_from_table(table, quiet=True):
             "Style"
         ]
 
-        rows = table.find_all('tr')
+        rows = table_body.find_all('tr')
         for row in rows:
             if any([r in row.text for r in row_keys]):
                 header = row.find('th').text.strip()

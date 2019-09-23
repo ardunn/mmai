@@ -127,7 +127,7 @@ setup(
     #
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
 
-    # This field lists other packages that your project depends on to run.
+    # This field lists other packages that your project depends on to scripts.
     # Any package you put here will be installed by pip when your project is
     # installed, so they must be valid existing projects.
     #
