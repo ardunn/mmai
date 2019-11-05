@@ -1,23 +1,20 @@
-import pprint
+import json
 
-import random
 import tqdm
-import pymongo
 
 from mmai.scrape.scrape_fighters import get_fighter_links
 from mmai.scrape.scrape_records import get_fighter_record_and_info_from_relative_link
 
 
 def scrape_wikipedia():
-    mc = pymongo.MongoClient(host="localhost", port=27017)
-    db = mc.mmai
-    c = db.raw
 
-    links = get_fighter_links()
+    links = get_fighter_links()[:10]
 
     good = []
     bad = []
     ugly = []
+
+    fighters = []
 
     for link in tqdm.tqdm(links):
         fighter_data = get_fighter_record_and_info_from_relative_link(link, quiet=True, silent=False)
@@ -36,7 +33,7 @@ def scrape_wikipedia():
         fighter_data["title"] = link.text
 
         # pprint.pprint(fighter_data)
-        c.insert_one(fighter_data)
+        fighters.append(fighter_data)
 
     n_links = len(links)
     print(f"Links successfully parsed: {len(good)}/{n_links}"
@@ -49,6 +46,9 @@ def scrape_wikipedia():
             for l in v:
                 f.write(l.text)
                 f.write("\n")
+
+    with open("data/fighters.json", "w") as f:
+        json.dump(fighters, f)
 
 
 if __name__ == "__main__":

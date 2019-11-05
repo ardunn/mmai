@@ -2,6 +2,11 @@
 An experiment in using applied statistics and machine learning towards predicting fight outcomes.
 
 
+### Features
+* Contains data for fighters outside the UFC
+* Combines multiple reputable(ish) data sources
+* uses time series in combination with aggregate stats to make predictions
+
 ### Using mmai
 
 There are 3 steps to using mma-ai.
@@ -31,6 +36,8 @@ Auxiliary data is gathered from `fightmetric.com`.
 Auxiliary data scraping scripts were used from the repo https://github.com/jasonchanhku/UFC-MMA-Predictor. It is an excellent repo and I recommend you give it many github stars1
 
 
+#### Disclaimer
+The last working version of this repo is `2019.11.07`. If there are changes to the data sources since this date there is no guarantee any code here will work!
 
 
 

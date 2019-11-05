@@ -145,8 +145,7 @@ data_add_wc <- data_add_wc[c(1,2,12,3,4,5,6,7,8,9,10,11)]
 #cleaning data
 data_clean <- data_add_wc[!is.na(data_add_wc$Weight), ]
 
-write.csv(data_clean, file = "aux_data.csv")
-
+write.csv(data_clean, file = "data/aux_data.csv")
 
 
 # #dealing with catchweights
