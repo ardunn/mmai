@@ -20,6 +20,8 @@ for(j in 1:length(letters)){
 
 # url_list <- url_list[1:10]
 
+print(length(url_list))
+
 #initialization
 name <- character(length(url_list))
 weightclass <- numeric(length(url_list))
@@ -145,7 +147,7 @@ data_add_wc <- data_add_wc[c(1,2,12,3,4,5,6,7,8,9,10,11)]
 #cleaning data
 data_clean <- data_add_wc[!is.na(data_add_wc$Weight), ]
 
-write.csv(data_clean, file = "data/aux_data.csv")
+write.csv(data_clean, file = "data/aux_aggregate_stats.csv")
 
 
 # #dealing with catchweights
