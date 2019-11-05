@@ -27,13 +27,13 @@ This basically means you can adapt and share the repo code as long as it is not 
 The data itself and code adapted from other sources falls under its own usage rights.
 
 #### Data sources
-The main data source is Wikipedia. 
+The main data source is `www.wikipedia.org`. 
 
-Auxiliary data is gathered from `fightmetric.com`.
+Auxiliary data is gathered from `www.fightmetric.com` and `www.betmma.tips`.
 
 
 #### Prior work
-Auxiliary data scraping scripts were used from the repo https://github.com/jasonchanhku/UFC-MMA-Predictor. It is an excellent repo and I recommend you give it many github stars1
+Auxiliary data scraping scripts were used from the repo https://github.com/jasonchanhku/UFC-MMA-Predictor. It is an excellent repo and I recommend you give it many github stars! The author is Jason Chan Jin An and his github is [here](https://github.com/jasonchanhku).
 
 
 #### Disclaimer

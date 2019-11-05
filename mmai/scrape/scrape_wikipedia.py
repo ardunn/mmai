@@ -8,7 +8,7 @@ from mmai.scrape.scrape_records import get_fighter_record_and_info_from_relative
 
 def scrape_wikipedia():
 
-    links = get_fighter_links()[:10]
+    links = get_fighter_links()
 
     good = []
     bad = []

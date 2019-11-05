@@ -18,8 +18,9 @@ for(j in 1:length(letters)){
   url_list <- c(url_list, temp)
 }
 
-# url_list <- url_list[1:10]
+url_list <- url_list[2000:2200]
 
+print("Scraping this many fighters:")
 print(length(url_list))
 
 #initialization

@@ -64,7 +64,15 @@ for (i in 1:length(links)){
   fighter2_odds <- c(fighter2_odds, fighter2_odds_t)
 
 }
-a <- data.frame(Events = event, Fighter1 = fighter1, Fighter1_odds = fighter1_odds, Fighter2 = fighter2, Fighter2_odds = fighter2_odds)
+
+print(length(fighter1))
+print(length(fighter1_odds))
+print(length(fighter2))
+print(length(fighter2_odds))
+
+events_less <- event[1:length(fighter1)]
+
+a <- data.frame(Events = events_less, Fighter1 = fighter1, Fighter1_odds = fighter1_odds, Fighter2_odds = fighter2_odds)
 write.csv(a, "data/aux_odds.csv", row.names = FALSE)
 # write.csv(fighter2, "part2.csv", row.names = FALSE)
 # write.csv(win, "part3.csv", row.names = FALSE)
