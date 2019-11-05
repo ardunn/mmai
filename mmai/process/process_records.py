@@ -28,3 +28,7 @@ def raw_fighter_info_to_clean_info(info):
 
     """
     pass
+
+
+
+if __name__ == "__main__":
