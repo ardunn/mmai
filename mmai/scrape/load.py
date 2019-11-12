@@ -1,21 +1,24 @@
 import os
-import json
 
-thisdir = os.path.dirname(os.path.abspath(__file__))
-wikipedia_file_path = os.path.join(thisdir, "data/fighters.json")
+from mmai.util import load_json
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_fighters_wikipedia(datapath=wikipedia_file_path):
+
+def load_wikipedia_raw():
     """
-    Load the raw fighter data from wikipedia.
-
-    Args:
-        datapath (str): The path to find the fighters.json file at.
+    Load the raw wikipedia data from scraping.
 
     Returns:
-        [dict]: A list of fighter dicts from wikipedia data.
-    """
+        (list): The raw scraped data.
 
-    with open(datapath, "r") as f:
-        fighters_wikipedia = json.load(f)
-    return fighters_wikipedia
+    """
+    wikipedia_raw_file_path = os.path.join(this_dir, "data/fighters.json")
+    return load_json(wikipedia_raw_file_path)
+
+
+def load_wikipedia_processed():
+
+
+

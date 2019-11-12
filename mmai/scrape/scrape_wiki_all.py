@@ -2,8 +2,8 @@ import json
 
 import tqdm
 
-from mmai.scrape.scrape_fighters import get_fighter_links
-from mmai.scrape.scrape_records import get_fighter_record_and_info_from_relative_link
+from mmai.scrape.scrape_wiki_fighter_list import get_fighter_links
+from mmai.scrape.scrape_wiki_fighter_record import get_fighter_record_and_info_from_relative_link
 
 
 def scrape_wikipedia():
