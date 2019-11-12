@@ -8,6 +8,8 @@ library(stringr)
 
 print("ok, starting")
 
+print(letters)
+
 webpage <- character(length(letters))
 url_list <- c()
 

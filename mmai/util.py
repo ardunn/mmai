@@ -6,7 +6,7 @@ def load_json(datapath):
     Load the raw fighter data from wikipedia.
 
     Args:
-        datapath (str): The path to find the fighters.json file at.
+        datapath (str): The path to find the wiki_fighters_raw.json file at.
 
     Returns:
         [dict]: A list of fighter dicts from wikipedia data.
