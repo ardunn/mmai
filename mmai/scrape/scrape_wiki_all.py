@@ -47,7 +47,7 @@ def scrape_wikipedia():
                 f.write(l.text)
                 f.write("\n")
 
-    with open("data/fighters.json", "w") as f:
+    with open("data/wiki_fighters_raw.json", "w") as f:
         json.dump(fighters, f)
 
 

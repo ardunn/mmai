@@ -84,7 +84,7 @@ def get_fighter_record_betting_odds_from_relative_link(relative_link):
 
 def get_relative_link_from_fighter_name(name):
     # /search?query=Jon+Jones
-
+    pass
 
 
 if __name__ == "__main__":
