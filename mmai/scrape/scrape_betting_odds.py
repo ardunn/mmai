@@ -60,7 +60,7 @@ def get_fighter_record_betting_odds_from_relative_link(relative_link):
     headers = ["fighter_1", "fighter_1_odds_open", "fighter_1_odds_close_best", "fighter_1_odds_close_worst",
                "fighter_2", "fighter_2_odds_open", "fighter_2_odds_close_best", "fighter_2_odds_close_worst"]
     data = []
-    for rs in row_sets[:2]:
+    for rs in row_sets:
         bout_data = []
         for row in rs:
             info = []
