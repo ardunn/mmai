@@ -65,7 +65,7 @@ def get_fighter_record_betting_odds_from_relative_link(relative_link):
         for row in rs:
             info = []
             for cell in row.find_all("td"):
-                print(cell)
+                # print(cell)
                 inner_span = cell.find("span")
                 if inner_span:
                     contents = inner_span.contents[0]
@@ -88,5 +88,7 @@ def get_relative_link_from_fighter_name(name):
 
 
 if __name__ == "__main__":
-    df = get_fighter_record_betting_odds_from_relative_link("/fighters/Brandon-Vera-173")
+    # df = get_fighter_record_betting_odds_from_relative_link("/fighters/Brandon-Vera-173")
+    df = get_fighter_record_betting_odds_from_relative_link("/fighters/Israel-Adesanya-7845")
+
     print(df)
