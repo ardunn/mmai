@@ -19,7 +19,7 @@ The data itself and code adapted from other sources falls under its own usage ri
 #### Data sources
 The main data source is `www.wikipedia.org`. 
 
-Auxiliary data is gathered from `www.bestfightodds.com` and `www.betmma.tips`.
+Auxiliary data is gathered from `www.bestfightodds.com` and `www.ufcstats.com`.
 
 
 #### Disclaimer
