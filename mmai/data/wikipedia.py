@@ -250,9 +250,9 @@ class WikiFightersRaw(DataBase):
                 designations = {"good": good, "bad": bad, "ugly": ugly}
                 for d, l in designations.items():
                     f.write(d + "\n")
-                    f.write("-------------------------------------")
+                    f.write("-------------------------------------\n")
                     for item in l:
-                        f.write(l.text)
+                        f.write(item.text)
                         f.write("\n")
                     f.write("\n\n\n")
 

@@ -7,17 +7,7 @@ An experiment in using applied statistics and machine learning towards predictin
 * Combines multiple reputable(ish) data sources
 * uses time series in combination with aggregate stats to make predictions
 
-### Using mmai
-
-There are 3 steps to using mma-ai.
-
-1. Scraping the newest data.
-2. Cleaning the data.
-3. Fitting a model and predicting
-
-Actually, I lied. There is a 4th step:
-
-4. (optional) Using model to identify mismatches in betting odds.
+**This code is a work in progress, please do not use yet!**
 
 ---
 
@@ -29,11 +19,7 @@ The data itself and code adapted from other sources falls under its own usage ri
 #### Data sources
 The main data source is `www.wikipedia.org`. 
 
-Auxiliary data is gathered from `www.fightmetric.com` and `www.betmma.tips`.
-
-
-#### Prior work
-Auxiliary data scraping scripts were used from the repo https://github.com/jasonchanhku/UFC-MMA-Predictor. It is an excellent repo and I recommend you give it many github stars! The author is Jason Chan Jin An and his github is [here](https://github.com/jasonchanhku).
+Auxiliary data is gathered from `www.bestfightodds.com` and `www.betmma.tips`.
 
 
 #### Disclaimer

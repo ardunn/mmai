@@ -27,9 +27,23 @@ class OddsScrapeAndProcess(DataBase):
             "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"
         }
 
-    def scrape(self, fighter_names, randomized_wait=False):
+    def scrape(self, fighter_names, randomized_wait=False, report=True):
+        """
+        Scrape the betting odds for a list of fighter names (probably from wikipedia).
+
+        Args:
+            fighter_names (list): The fighter names.
+            randomized_wait: (bool) If True, randomizes a wait time between requests for searches.
+            report: (bool): If Tre,
+
+        Returns:
+
+        """
 
         betting_odds = {}
+        good = []  # warning level 0
+        bad = []  # warning level 1
+        ugly = []  # warning level 2
 
         for name in tqdm(fighter_names):
             if randomized_wait:
@@ -37,10 +51,6 @@ class OddsScrapeAndProcess(DataBase):
                 time.sleep(wait)
 
             links = self.get_relative_link_from_fighter_name(name)
-
-            good = []  # warning level 0
-            bad = []   # warning level 1
-            ugly = []  # warning level 2
 
             odds_record = None
 
@@ -70,6 +80,30 @@ class OddsScrapeAndProcess(DataBase):
             betting_odds[name] = data
 
         self.data = betting_odds
+
+        n_fighters = len(fighter_names)
+        print(
+            f"Links successfully parsed: {len(good)}/{n_fighters}"
+            f"\nDidn't find a link: {len(bad)}/{n_fighters}"
+            f"\nFound a link but couldn't parse it: {len(ugly)}/{n_fighters}"
+        )
+
+        if report:
+            with open("odds_scraping_report.txt", "w") as f:
+                designations = {"good": good, "bad": bad, "ugly": ugly}
+                for d, l in designations.items():
+                    f.write(d + "\n")
+                    f.write("-------------------------------------\n")
+                    for item in l:
+                        f.write(item)
+                        f.write("\n")
+                    f.write("\n\n\n")
+
+        return betting_odds
+
+    ################################################################################################################
+    # Auxiliary methods
+    ################################################################################################################
 
     def get_fighter_record_betting_odds_from_relative_link(self, relative_link):
         """
@@ -193,7 +227,7 @@ if __name__ == "__main__":
     odds = OddsScrapeAndProcess()
     # links = odds.get_relative_link_from_fighter_name("Jon Jones")
     # table = odds.get_fighter_record_betting_odds_from_relative_link(links[0])
-    odds.scrape(fighter_names, randomized_wait=True)
+    odds.scrape(fighter_names, randomized_wait=False)
     odds.save()
     #
     # n_non2 = 0
