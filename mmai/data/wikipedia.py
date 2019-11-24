@@ -12,45 +12,10 @@ import pandas as pd
 import tqdm
 import numpy as np
 
-from mmai.util import load_json
-
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+from mmai.data.base import DataBase, THIS_DIR
 
 
-class WikiFightersBase:
-    """
-    A base class for data operations on wikipedia fighter data.
-    """
-
-    def __init__(self):
-        self.data = None
-        self.data_filename = None
-
-    def load(self):
-        """
-        Load the raw scraped data from a static file.
-
-        Returns:
-            [dict]: a list of raw fighter data dicts
-
-        """
-        d = load_json(self.data_filename)
-        self.data = d
-        return d
-
-    def save(self):
-        """
-        Saves the raw scraped data list to a file.
-
-        Returns:
-            None
-        """
-        with open(self.data_filename, "w") as f:
-            json.dump(self.data, f)
-        print(f"File dumped to {self.data_filename}!")
-
-
-class WikiFightersProcessed(WikiFightersBase):
+class WikiFightersProcessed(DataBase):
     """
     A class for processing raw data scraped from wikipedia.
 
@@ -60,30 +25,31 @@ class WikiFightersProcessed(WikiFightersBase):
         raw_data: The data which this class cleans and processes.
     """
 
-    def __init__(self, raw_data):
+    def __init__(self):
         """
         A list of fighter dicts scraped using the WikiFightersRaw class. Use the .data attr.
 
         Args:
-            raw_data: The output of the WikiFightersRaw class. Use the .data attr.
         """
-        self.raw_data = raw_data
+        self.raw_data = None
         self.data = None
         self.data_filename = os.path.join(
             THIS_DIR, "static/wiki_fighters_processed.json"
         )
 
-    def process(self, warning_level_threshold=1):
+    def process(self, raw_data, warning_level_threshold=1):
         """
         Process the raw wikipedia records.
 
         Args:
+            raw_data: The output of the WikiFightersRaw class. Use the .data attr.
             warning_level_threshold: Only retain records with this warning level or lower.
 
         Returns:
 
         """
-        raw = self.raw_data
+        raw = raw_data
+        self.raw_data = raw_data
         # fighters = []
         fighters = {}
 
@@ -180,7 +146,7 @@ class WikiFightersProcessed(WikiFightersBase):
                 "reach_cm": reach,
             }
 
-            fighters[full_name] = fighter_data
+            fighters[modified_name] = fighter_data
 
         self.data = fighters
         return fighters
@@ -217,10 +183,11 @@ class WikiFightersProcessed(WikiFightersBase):
                     modified_name += letter
                 else:
                     pass
-            return modified_name
+            modified_name = " ".join(modified_name.split(" "))  # getting rid of multiple whitespace
+            return modified_name.strip()
 
 
-class WikiFightersRaw(WikiFightersBase):
+class WikiFightersRaw(DataBase):
     """
     A class for scraping raw MMA fighter data from wikipedia.
 
@@ -297,9 +264,9 @@ class WikiFightersRaw(WikiFightersBase):
     ################################################################################################################
 
     def get_fighter_links(
-        self,
-        src="https://en.wikipedia.org/wiki/List_of_male_mixed_martial_artists",
-        return_garbage=False,
+            self,
+            src="https://en.wikipedia.org/wiki/List_of_male_mixed_martial_artists",
+            return_garbage=False,
     ):
         """
         Get a list of fighters as links to their individual wikipedia pages.
@@ -328,7 +295,7 @@ class WikiFightersRaw(WikiFightersBase):
             return fighters
 
     def get_fighter_record_and_info_from_relative_link(
-        self, relative_link, condense=True, quiet=True, silent=False
+            self, relative_link, condense=True, quiet=True, silent=False
     ):
         """
         Get a fighter's record and info from a relative wikipedia link.
@@ -561,7 +528,7 @@ class WikiFightersRaw(WikiFightersBase):
             return None
 
     def get_page_content_by_wiki_relative_link(
-        self, relative_link, base_link="https://en.wikipedia.org"
+            self, relative_link, base_link="https://en.wikipedia.org"
     ):
         """
         Fetch the html content for a wikipedia fighter page by relative link.
@@ -678,8 +645,8 @@ if __name__ == "__main__":
 
     print(len(wikir.data))
 
-    wikip = WikiFightersProcessed(raw_data=wikir.data)
-    wikip.process()
+    wikip = WikiFightersProcessed()
+    wikip.process(raw_data=wikir.data)
 
     wikip.save()
-    print(wikip.data)
+    # print(wikip.data)
