@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 import os
 from tqdm import tqdm
 import difflib
+import time
+import random
 
 from mmai.data.base import DataBase, THIS_DIR
 
@@ -25,17 +27,49 @@ class OddsScrapeAndProcess(DataBase):
             "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:70.0) Gecko/20100101 Firefox/70.0"
         }
 
-    def scrape(self, fighter_names):
+    def scrape(self, fighter_names, randomized_wait=False):
+
+        betting_odds = {}
+
         for name in tqdm(fighter_names):
+            if randomized_wait:
+                wait = random.random() * 3.0
+                time.sleep(wait)
+
             links = self.get_relative_link_from_fighter_name(name)
+
+            good = []  # warning level 0
+            bad = []   # warning level 1
+            ugly = []  # warning level 2
+
+            odds_record = None
+
             if len(links) == 0:
                 print(f"No links found for fighter: {name}")
+                bad.append(name)
+                warning_level = 1
                 continue
             elif len(links) > 1:
                 warnings.warn(f"Too many links found for {name}, keeping the first one ({links[0]}")
             link = links[0]
 
-            record = self.get_fighter_record_betting_odds_from_relative_link(link)
+            try:
+                odds_record = self.get_fighter_record_betting_odds_from_relative_link(link)
+                good.append(name)
+                warning_level = 0
+            except:
+                warnings.warn(f"Link {link} for fighter {name} was tried but failed.")
+                ugly.append(name)
+                warning_level = 2
+
+            data = {
+                "warning_level": warning_level,
+                "odds_record": odds_record.to_dict()
+            }
+
+            betting_odds[name] = data
+
+        self.data = betting_odds
 
     def get_fighter_record_betting_odds_from_relative_link(self, relative_link):
         """
@@ -88,6 +122,7 @@ class OddsScrapeAndProcess(DataBase):
             "fighter_2_odds_open",
             "fighter_2_odds_close_best",
             "fighter_2_odds_close_worst",
+            "date"
         ]
         data = []
         for rs in row_sets:
@@ -95,12 +130,15 @@ class OddsScrapeAndProcess(DataBase):
             for row in rs:
                 info = []
                 for cell in row.find_all("td"):
-                    # print(cell)
-                    inner_span = cell.find("span")
-                    if inner_span:
-                        contents = inner_span.contents[0]
-                        if "–" not in contents and "%" not in contents:
-                            info.append(contents)
+                    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+                    if any([m + " " in str(cell) for m in months]):
+                        info.append(cell.contents[0])
+                    else:
+                        inner_span = cell.find("span")
+                        if inner_span:
+                            contents = inner_span.contents[0]
+                            if "–" not in contents and "%" not in contents:
+                                info.append(contents)
 
                 fighter = row.find("th").find("a").find("div").contents[0]
 
@@ -135,8 +173,11 @@ class OddsScrapeAndProcess(DataBase):
                     lower_link_stripped = href.replace("/fighters/", "")
                     # print(name_linked, lower_link_stripped)
                     seq = difflib.SequenceMatcher(a=name_linked, b=lower_link_stripped)
-                    if seq.ratio < 0.5:
+                    if seq.ratio() > 0.5:
                         working_links.append(href)
+                    else:
+                        print(f"Sequence difference too great between {name_linked} and {lower_link_stripped}")
+
         return working_links
 
 if __name__ == "__main__":
@@ -147,12 +188,13 @@ if __name__ == "__main__":
     wikip.load()
 
     fighter_names = list(wikip.data.keys())
-    fighter_names = random.choices()
+    # fighter_names = random.sample(fighter_names, 10)
 
     odds = OddsScrapeAndProcess()
-    links = odds.get_relative_link_from_fighter_name("Thiago Alves")
-    # print(links)
-    odds.scrape(fighter_names)
+    # links = odds.get_relative_link_from_fighter_name("Jon Jones")
+    # table = odds.get_fighter_record_betting_odds_from_relative_link(links[0])
+    odds.scrape(fighter_names, randomized_wait=True)
+    odds.save()
     #
     # n_non2 = 0
     # for f in wikip.data.keys():
